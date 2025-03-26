@@ -1,0 +1,22 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+/*.jar
+/*.war
+/*.pom.xml.sha1
+/*.pom.xml.md5
+
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+*.tmp
+*.bak
+*.swp
+
+/tomcat*/
