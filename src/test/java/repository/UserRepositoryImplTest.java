@@ -1,5 +1,6 @@
 package repository;
 
+import entity.Post;
 import entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import static org.hamcrest.Matchers.*;
 class UserRepositoryImplTest extends TestDatabaseSetup {
 
     private UserRepositoryImpl userRepository;
+    private PostRepositoryImpl postRepository;
 
     @BeforeEach
     void setup() {
@@ -27,7 +29,7 @@ class UserRepositoryImplTest extends TestDatabaseSetup {
         }
 
         userRepository = new UserRepositoryImpl(dataSourceUtil);
-        PostRepositoryImpl postRepository = new PostRepositoryImpl(dataSourceUtil);
+        postRepository = new PostRepositoryImpl(dataSourceUtil);
         postRepository.setUserRepository(userRepository);
         userRepository.setPostRepository(postRepository);
     }
@@ -72,5 +74,29 @@ class UserRepositoryImplTest extends TestDatabaseSetup {
     void shouldReturnNullWhenUserNotFound() {
         User found = userRepository.findById(999L);
         assertThat(found, nullValue());
+    }
+    @Test
+    void shouldLoadCommentsForUser() {
+        User user = new User();
+        user.setName("Test User");
+        user = userRepository.save(user);
+
+        Post post = new Post();
+        post.setTitle("Test Post");
+        post.setContent("Content");
+        post.setUser(user);
+        post = postRepository.save(post);
+
+        try (Connection conn = dataSourceUtil.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("INSERT INTO comments (text, user_id, post_id) VALUES " +
+                    "('Test Comment', " + user.getId() + ", " + post.getId() + ")");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert comment", e);
+        }
+
+        User loadedUser = userRepository.findById(user.getId());
+        assertThat(loadedUser.getComments(), hasSize(1));
+        assertThat(loadedUser.getComments().get(0).getText(), is("Test Comment"));
     }
 }

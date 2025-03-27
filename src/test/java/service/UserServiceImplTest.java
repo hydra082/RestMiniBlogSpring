@@ -76,4 +76,36 @@ class UserServiceImplTest {
         verify(userRepository).save(any(User.class));
         verify(userMapper).toDTO(savedUser);
     }
+
+    @Test
+    void shouldUpdateUser() {
+        UserDAO userDAO = new UserDAO();
+        userDAO.setId(1L);
+        userDAO.setName("Updated");
+
+        User user = new User();
+        user.setId(1L);
+        user.setName("Updated");
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(1L);
+        userDTO.setName("Updated");
+
+        when(userMapper.toEntity(userDAO)).thenReturn(user);
+        when(userMapper.toDTO(user)).thenReturn(userDTO);
+        doNothing().when(userRepository).update(any(User.class));
+
+        UserDTO result = userService.updateUser(userDAO);
+
+        assertThat(result.getName(), is("Updated"));
+        verify(userRepository).update(any(User.class));
+        verify(userMapper).toDTO(user);
+    }
+
+    @Test
+    void shouldDeleteUser() {
+        doNothing().when(userRepository).delete(1L);
+        userService.deleteUser(1L);
+        verify(userRepository).delete(1L);
+    }
 }

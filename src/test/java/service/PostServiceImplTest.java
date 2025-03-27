@@ -67,4 +67,55 @@ class PostServiceImplTest {
         verify(postRepository).save(any(Post.class));
         verify(postMapper).toDTO(savedPost);
     }
+    @Test
+    void shouldGetPostById() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setTitle("Test Post");
+
+        PostDTO postDTO = new PostDTO();
+        postDTO.setId(1L);
+        postDTO.setTitle("Test Post");
+
+        when(postRepository.findById(1L)).thenReturn(post);
+        when(postMapper.toDTO(post)).thenReturn(postDTO);
+
+        PostDTO result = postService.getPostById(1L);
+
+        assertThat(result, notNullValue());
+        assertThat(result.getTitle(), is("Test Post"));
+        verify(postRepository).findById(1L);
+        verify(postMapper).toDTO(post);
+    }
+    @Test
+    void shouldUpdatePost() {
+        PostDAO postDAO = new PostDAO();
+        postDAO.setId(1L);
+        postDAO.setTitle("Updated");
+        postDAO.setUserId(1L);
+
+        Post post = new Post();
+        post.setId(1L);
+        post.setTitle("Updated");
+
+        PostDTO postDTO = new PostDTO();
+        postDTO.setId(1L);
+        postDTO.setTitle("Updated");
+
+        when(postMapper.toEntity(postDAO)).thenReturn(post);
+        when(postMapper.toDTO(post)).thenReturn(postDTO);
+        doNothing().when(postRepository).update(any(Post.class));
+
+        PostDTO result = postService.updatePost(postDAO);
+
+        assertThat(result.getTitle(), is("Updated"));
+        verify(postRepository).update(any(Post.class));
+        verify(postMapper).toDTO(post);
+    }
+    @Test
+    void shouldDeletePost() {
+        doNothing().when(postRepository).delete(1L);
+        postService.deletePost(1L);
+        verify(postRepository).delete(1L);
+    }
 }
